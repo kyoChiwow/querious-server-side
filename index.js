@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 // Middleware Settings here
 app.use(
@@ -95,15 +95,25 @@ async function run() {
     })
 
     app.get("/query", async (req, res) => {
-      const email = req.query.email;
-      const emailQuery = email ? {userEmail: email} : {};
-      const cursor = queryCollection.find(emailQuery);
+      const query = {};
+      const cursor = queryCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     })
 
-    app.post("/myquery", verifyToken, async (req, res) => {
+    app.get("/updatequery/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id)};
+      const result = await queryCollection.findOne(query);
+      res.send(result);
+    })
 
+    app.get("/myquery", verifyToken, async (req, res) => {
+      const email = req.query.email;
+      const emailQuery = { userEmail: email };
+      const cursor = queryCollection.find(emailQuery);
+      const result = await cursor.toArray();
+      res.send(result);
     })
     // Query related APIS
 
