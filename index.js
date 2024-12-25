@@ -62,6 +62,7 @@ async function run() {
 
     // Creating Product Collection here
     const queryCollection = client.db("queryProducts").collection("queries");
+    const recommendedCollection = client.db("recommendedProducts").collection("products");
     // Creating Product Collection here
 
     // JWT APIS
@@ -134,6 +135,18 @@ async function run() {
       res.send(result);
     })
     // Query related APIS
+
+    // Recommended related APIS
+    app.post("/products", async (req, res) => {
+      const newProduct = req.body;
+      const result = await recommendedCollection.insertOne(newProduct);
+      res.send(result);
+    })
+
+    app.post("/products/", async (req, res) => {
+
+    })
+    // Recommended related APIS
 
 
 
