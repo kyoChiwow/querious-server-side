@@ -61,11 +61,11 @@ async function run() {
     );
 
     // Creating Product Collection here
-    const queryCollection = client.db("queryProducts").collection("products");
+    const queryCollection = client.db("queryProducts").collection("queries");
     // Creating Product Collection here
 
     // JWT APIS
-    app.post("/jwt", verifyToken, async (req, res) => {
+    app.post("/jwt", async (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_SECRET_KEY, {
         expiresIn: "24h",
@@ -86,6 +86,29 @@ async function run() {
         })
         .send({ success: true });
     });
+
+    // Query related APIS
+    app.post("/query", async (req, res) => {
+      const newQuery = req.body;
+      const result = await queryCollection.insertOne(newQuery);
+      res.send(result);
+    })
+
+    app.get("/query", async (req, res) => {
+      const email = req.query.email;
+      const emailQuery = email ? {userEmail: email} : {};
+      const cursor = queryCollection.find(emailQuery);
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+
+    app.post("/myquery", verifyToken, async (req, res) => {
+
+    })
+    // Query related APIS
+
+
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
