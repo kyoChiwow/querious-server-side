@@ -108,6 +108,24 @@ async function run() {
       res.send(result);
     })
 
+    app.patch("/updatequery/:id", async (req, res) => {
+      const id = req.params.id;
+      const updateData = req.body;
+      const query = { _id: new ObjectId(id)}
+      const updateQuery = {
+        $set: updateData
+      }
+      const result = await queryCollection.updateOne(query, updateQuery)
+      res.send(result);
+    })
+
+    app.delete("/myquery/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id)};
+      const result = await queryCollection.deleteOne(query);
+      res.send(result);
+    })
+
     app.get("/myquery", verifyToken, async (req, res) => {
       const email = req.query.email;
       const emailQuery = { userEmail: email };
