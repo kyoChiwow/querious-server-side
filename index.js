@@ -14,7 +14,6 @@ app.use(
       "http://localhost:5173",
       "https://assignment-11-ebe19.web.app",
       "https://assignment-11-ebe19.firebaseapp.com",
-      "https://assignment-11-server-side-ten-beryl.vercel.app",
     ],
     credentials: true,
   })
