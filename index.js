@@ -146,19 +146,36 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/products", verifyToken,  async (req, res) => {
+    app.get("/products", verifyToken, async (req, res) => {
       const id = req.query.id;
-      const queryId = id ? { queryId: id } : {}
+      const queryId = id ? { queryId: id } : {};
       const result = await recommendedCollection.find(queryId).toArray();
       res.send(result);
     });
 
-    app.get("/products", verifyToken, async (req, res) => {
+    app.get("/products", async (req, res) => {
       const email = req.query.email;
-      const query = { recommenderEmail: email }
+      const query = { recommenderEmail: email };
       const result = await recommendedCollection.find(query).toArray();
       res.send(result);
-    })
+    });
+
+    app.delete("/products/:id", async (req, res) => {
+      const recommendId = req.params.id;
+      const recommendQuery = { _id: new ObjectId(recommendId) };
+      const result = await recommendedCollection.deleteOne(recommendQuery);
+      res.send(result);
+    });
+
+    app.patch("/products/:id", async (req, res) => {
+      const queryId = req.params.id;
+      const productQuery = { _id: new ObjectId(queryId) };
+      const updateQuery = {
+        $inc: { recommendationCount: -1 },
+      };
+      const result = await queryCollection.updateOne(productQuery, updateQuery);
+      res.send(result);
+    });
     // Recommended related APIS
   } finally {
     // Ensures that the client will close when you finish/error
