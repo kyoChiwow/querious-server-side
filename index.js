@@ -10,7 +10,12 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 // Middleware Settings here
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "http://localhost:5173",
+      "https://assignment-11-ebe19.web.app",
+      "https://assignment-11-ebe19.firebaseapp.com",
+      "https://assignment-11-server-side-ten-beryl.vercel.app",
+    ],
     credentials: true,
   })
 );
@@ -76,7 +81,8 @@ async function run() {
       res
         .cookie("token", token, {
           httpOnly: true,
-          secure: false,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         })
         .send({ success: true });
     });
@@ -85,7 +91,8 @@ async function run() {
       res
         .clearCookie("token", {
           httpOnly: true,
-          secure: false,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         })
         .send({ success: true });
     });
@@ -123,14 +130,14 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/myquery/:id", verifyToken, async (req, res) => {
+    app.delete("/myquery/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await queryCollection.deleteOne(query);
       res.send(result);
     });
 
-    app.get("/myquery", verifyToken, async (req, res) => {
+    app.get("/myquery", async (req, res) => {
       const email = req.query.email;
       const emailQuery = { userEmail: email };
       const cursor = queryCollection.find(emailQuery);
@@ -139,43 +146,40 @@ async function run() {
     });
 
     app.get("/recentqueries", async (req, res) => {
-      const recentQuries = await queryCollection
-        .find({})
-        .limit(6)
-        .toArray();
+      const recentQuries = await queryCollection.find({}).limit(6).toArray();
       res.send(recentQuries);
     });
     // Query related APIS
 
     // Recommended related APIS
-    app.post("/products", verifyToken, async (req, res) => {
+    app.post("/products", async (req, res) => {
       const newProduct = req.body;
       const result = await recommendedCollection.insertOne(newProduct);
       res.send(result);
     });
 
-    app.get("/products", verifyToken, async (req, res) => {
+    app.get("/products", async (req, res) => {
       const id = req.query.id;
       const queryId = id ? { queryId: id } : {};
       const result = await recommendedCollection.find(queryId).toArray();
       res.send(result);
     });
 
-    app.get("/products", verifyToken, async (req, res) => {
+    app.get("/products", async (req, res) => {
       const email = req.query.email;
       const query = { recommenderEmail: email };
       const result = await recommendedCollection.find(query).toArray();
       res.send(result);
     });
 
-    app.delete("/products/:id", verifyToken, async (req, res) => {
+    app.delete("/products/:id", async (req, res) => {
       const recommendId = req.params.id;
       const recommendQuery = { _id: new ObjectId(recommendId) };
       const result = await recommendedCollection.deleteOne(recommendQuery);
       res.send(result);
     });
 
-    app.patch("/products/:id", verifyToken, async (req, res) => {
+    app.patch("/products/:id", async (req, res) => {
       const queryId = req.params.id;
       const productQuery = { _id: new ObjectId(queryId) };
       const updateQuery = {
@@ -185,7 +189,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/recommendme", verifyToken, async (req, res) => {
+    app.get("/recommendme", async (req, res) => {
       const email = req.query.email;
       const emailQueries = await queryCollection
         .find({ userEmail: email })
