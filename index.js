@@ -62,7 +62,9 @@ async function run() {
 
     // Creating Product Collection here
     const queryCollection = client.db("queryProducts").collection("queries");
-    const recommendedCollection = client.db("recommendedProducts").collection("products");
+    const recommendedCollection = client
+      .db("recommendedProducts")
+      .collection("products");
     // Creating Product Collection here
 
     // JWT APIS
@@ -89,43 +91,44 @@ async function run() {
     });
 
     // Query related APIS
-    app.post("/query", async (req, res) => {
+    app.post("/query", verifyToken, async (req, res) => {
       const newQuery = req.body;
       const result = await queryCollection.insertOne(newQuery);
       res.send(result);
-    })
+    });
 
     app.get("/query", async (req, res) => {
       const query = {};
       const cursor = queryCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
-    })
+    });
 
     app.get("/updatequery/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await queryCollection.findOne(query);
       res.send(result);
-    })
+    });
 
     app.patch("/updatequery/:id", async (req, res) => {
       const id = req.params.id;
       const updateData = req.body;
-      const query = { _id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) };
       const updateQuery = {
-        $set: updateData
-      }
-      const result = await queryCollection.updateOne(query, updateQuery)
+        $set: updateData,
+        $inc: { recommendationCount: 1 },
+      };
+      const result = await queryCollection.updateOne(query, updateQuery);
       res.send(result);
-    })
+    });
 
-    app.delete("/myquery/:id", async (req, res) => {
+    app.delete("/myquery/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await queryCollection.deleteOne(query);
       res.send(result);
-    })
+    });
 
     app.get("/myquery", verifyToken, async (req, res) => {
       const email = req.query.email;
@@ -133,23 +136,23 @@ async function run() {
       const cursor = queryCollection.find(emailQuery);
       const result = await cursor.toArray();
       res.send(result);
-    })
+    });
     // Query related APIS
 
     // Recommended related APIS
-    app.post("/products", async (req, res) => {
+    app.post("/products", verifyToken, async (req, res) => {
       const newProduct = req.body;
       const result = await recommendedCollection.insertOne(newProduct);
       res.send(result);
-    })
+    });
 
-    app.post("/products/", async (req, res) => {
-
-    })
+    app.get("/products", verifyToken,  async (req, res) => {
+      const id = req.query.id;
+      const queryId = id ? { queryId: id } : {}
+      const result = await recommendedCollection.find(queryId).toArray();
+      res.send(result);
+    });
     // Recommended related APIS
-
-
-
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
