@@ -137,6 +137,14 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    app.get("/recentqueries", async (req, res) => {
+      const recentQuries = await queryCollection
+        .find({})
+        .limit(6)
+        .toArray();
+      res.send(recentQuries);
+    });
     // Query related APIS
 
     // Recommended related APIS
@@ -153,21 +161,21 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/products",verifyToken, async (req, res) => {
+    app.get("/products", verifyToken, async (req, res) => {
       const email = req.query.email;
       const query = { recommenderEmail: email };
       const result = await recommendedCollection.find(query).toArray();
       res.send(result);
     });
 
-    app.delete("/products/:id",verifyToken, async (req, res) => {
+    app.delete("/products/:id", verifyToken, async (req, res) => {
       const recommendId = req.params.id;
       const recommendQuery = { _id: new ObjectId(recommendId) };
       const result = await recommendedCollection.deleteOne(recommendQuery);
       res.send(result);
     });
 
-    app.patch("/products/:id",verifyToken, async (req, res) => {
+    app.patch("/products/:id", verifyToken, async (req, res) => {
       const queryId = req.params.id;
       const productQuery = { _id: new ObjectId(queryId) };
       const updateQuery = {
@@ -179,16 +187,20 @@ async function run() {
 
     app.get("/recommendme", verifyToken, async (req, res) => {
       const email = req.query.email;
-      const emailQueries = await queryCollection.find({ userEmail: email}).toArray();
+      const emailQueries = await queryCollection
+        .find({ userEmail: email })
+        .toArray();
 
-      const emailQueryIds = emailQueries.map(query => query._id.toString());
+      const emailQueryIds = emailQueries.map((query) => query._id.toString());
 
-      const getRecommendations = await recommendedCollection.find({
-        queryId: { $in: emailQueryIds }
-      }).toArray();
+      const getRecommendations = await recommendedCollection
+        .find({
+          queryId: { $in: emailQueryIds },
+        })
+        .toArray();
 
-      res.send(getRecommendations)
-    })
+      res.send(getRecommendations);
+    });
     // Recommended related APIS
   } finally {
     // Ensures that the client will close when you finish/error
