@@ -152,6 +152,13 @@ async function run() {
       const result = await recommendedCollection.find(queryId).toArray();
       res.send(result);
     });
+
+    app.get("/products", verifyToken, async (req, res) => {
+      const email = req.query.email;
+      const query = { recommenderEmail: email }
+      const result = await recommendedCollection.find(query).toArray();
+      res.send(result);
+    })
     // Recommended related APIS
   } finally {
     // Ensures that the client will close when you finish/error
