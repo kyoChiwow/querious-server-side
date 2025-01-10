@@ -145,7 +145,7 @@ async function run() {
     });
 
     app.get("/recentqueries", async (req, res) => {
-      const recentQuries = await queryCollection.find({}).limit(6).toArray();
+      const recentQuries = await queryCollection.find({}).limit(8).toArray();
       res.send(recentQuries);
     });
     // Query related APIS
